@@ -133,6 +133,8 @@ function getStandings() {
 }
 
 function getTeamById() {
+  return new Promise(function(resolve, reject) {
+    
     var urlParams = new URLSearchParams(window.location.search);
     var idParam = urlParams.get("id");
     var team_id_url = `${base_url}teams/${idParam}`;
@@ -187,6 +189,8 @@ function getTeamById() {
               </div>
                           `;
             document.getElementById("body-content").innerHTML = teamHTML;
+            // Kirim objek data hasil parsing json agar bisa disimpan ke indexed db
+            resolve(data);
           });
         }
       });
@@ -245,5 +249,48 @@ function getTeamById() {
           </div>
                       `;
         document.getElementById("body-content").innerHTML = teamHTML;
+        // Kirim objek data hasil parsing json agar bisa disimpan ke indexed db
+        resolve(data);
       });
-  }
+    }
+)}
+function getSavedTeams() {
+  getAll().then(function(data) {
+    console.log(data);
+    // Menyusun komponen card artikel secara dinamis
+    var teamsHTML = "";
+    data.forEach(function(data) {
+      teamsHTML += `
+            <div class="row">
+            <div class="col s12">
+              <div class="card">
+                <div class="card-image">
+                  <img src="${data.crestUrl}">
+                  <button class="btn-floating halfway-fab waves-effect waves-light red" id="delete" value="${data.id}"><i class="material-icons">delete</i></button>
+                </div>
+                <div class="card-content">
+                <span class="card-title" align="center" style="font-weight:bold; margin-bottom:20px; color:#0D47A1;"><u>${data.name}</u></span>
+                <p align="center">Nickname : ${data.shortName}<br>Address : ${data.address}<br>Founded : ${data.founded}<br>Club Colors : ${data.clubColors}<br>Venue : ${data.venue}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+                `;
+
+    });
+    // Sisipkan komponen card ke dalam elemen dengan id #body-content
+    document.getElementById("body-content").innerHTML = teamsHTML;
+    let btn = document.querySelectorAll(".btn-floating");
+           for(let button of btn) {
+               button.addEventListener("click", function (event) {
+                   let id = Number(button.value);
+                   console.log(id);
+                   var toastHTML = '<span>Successfully remove the team from favorite</span><button onclick="M.Toast.getInstance(this.parentElement).dismiss()" class="btn-flat toast-action">Close</button>';
+                   M.toast({html: toastHTML});
+                   dbDeleteTeam(id).then(() => {
+                       getSavedTeams()
+                   })
+               })
+           }
+  });
+}
