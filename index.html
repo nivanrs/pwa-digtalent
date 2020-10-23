@@ -63,13 +63,23 @@
             return;
           }
 
-          navigator.serviceWorker.getRegistration().then(function(reg) {
-            reg.showNotification('Notifikasi diijinkan!');
-          });
-
-        });
-      }
-    }
+          if (('PushManager' in window)) {
+            navigator.serviceWorker.getRegistration().then(function(registration) {
+              registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array("AAAAVpUZQ0Y:APA91bFA6pU7bGOM6kK3avds8rF_snuG9o-o2I08wmT6NckGcCmK_b33SHmBA1E6-tuyCsgattqqARDckNx0vC4dO8ijvDtGD_A7ZgBiFaLXvRzqkso8W8qb7_ncR87-Pe0Qe4-_6Q9n")
+              }).then(function(subscribe) {
+                console.log('Berhasil melakukan subscribe dengan endpoint: ', subscribe.endpoint);
+                console.log('Berhasil melakukan subscribe dengan p256dh key: ', btoa(String.fromCharCode.apply(null, new Uint8Array(subscribe.getKey('p256dh')))));
+                console.log('Berhasil melakukan subsccribe dengan auth key: ', btoa(String.fromCharCode.apply(null, new Uint8Array(subscribe.getKey('auth')))));
+              }).catch(function(e) {
+                console.error('Tidak dapat melakukan subscribe ', e.message);
+              });
+            });
+          }
+        })
+      } 
+    };
 
   </script>
 </body>
